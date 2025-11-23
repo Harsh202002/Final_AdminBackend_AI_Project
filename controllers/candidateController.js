@@ -2,7 +2,7 @@ import Candidate from "../models/candidate.js";
 import JD from "../models/jobDescription.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import errorResponse from "../utils/errorResponse.js";
-import cloudinary from "../utils/cloudinary.js";
+import cloudinary, { uploadBuffer } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import { config } from "../config/index.js";
 
@@ -28,20 +28,59 @@ export const loginCandidate = asyncHandler(async (req, res, next) => {
 });
 
 // Apply for a job (JD)
+// export const applyJob = asyncHandler(async (req, res, next) => {
+//   const { jdId } = req.params;
+//   const { name, email, phone, reallocate } = req.body;
+//   if (!req.files || !req.files.resume) return next(new errorResponse("Resume file required", 400));
+//   const resumeFile = req.files.resume;
+//   const resumeUrl = await cloudinary.uploader.upload(resumeFile.tempFilePath, { folder: 'candidates' });
+//   const candidate = await Candidate.findOne({ email });
+//   if (!candidate) return next(new errorResponse("Candidate not found", 404));
+//   const jd = await JD.findById(jdId);
+//   if (!jd) return next(new errorResponse("JD not found", 404));
+//   // Prevent duplicate application
+//   if (jd.appliedCandidates.some(c => c.candidate.toString() === candidate._id.toString())) {
+//     return next(new errorResponse("Already applied to this job", 400));
+//   }
+//   jd.appliedCandidates.push({
+//     candidate: candidate._id,
+//     resume: resumeUrl,
+//     name,
+//     email,
+//     phone,
+//     reallocate: reallocate === "yes" || reallocate === true,
+//     status: "pending",
+//   });
+//   await jd.save();
+//   res.status(201).json({ success: true, message: "Applied successfully" });
+// });
+
+
 export const applyJob = asyncHandler(async (req, res, next) => {
   const { jdId } = req.params;
   const { name, email, phone, reallocate } = req.body;
-  if (!req.files || !req.files.resume) return next(new errorResponse("Resume file required", 400));
-  const resumeFile = req.files.resume;
-  const resumeUrl = await cloudinary.uploader.upload(resumeFile.tempFilePath, { folder: 'candidates' });
+
+  if (!req.file) {
+    return next(new errorResponse("Resume file required", 400));
+  }
+
+  const uploadResult = await uploadBuffer(req.file.buffer, "candidates");
+  const resumeUrl = uploadResult.secure_url + `?v=${Date.now()}`;
+
   const candidate = await Candidate.findOne({ email });
   if (!candidate) return next(new errorResponse("Candidate not found", 404));
+
+  // 🔥 FIX — ALWAYS UPDATE CANDIDATE'S RESUME
+  candidate.resume = resumeUrl;
+  await candidate.save();
+
   const jd = await JD.findById(jdId);
   if (!jd) return next(new errorResponse("JD not found", 404));
-  // Prevent duplicate application
+
   if (jd.appliedCandidates.some(c => c.candidate.toString() === candidate._id.toString())) {
     return next(new errorResponse("Already applied to this job", 400));
   }
+
   jd.appliedCandidates.push({
     candidate: candidate._id,
     resume: resumeUrl,
@@ -51,9 +90,15 @@ export const applyJob = asyncHandler(async (req, res, next) => {
     reallocate: reallocate === "yes" || reallocate === true,
     status: "pending",
   });
+
   await jd.save();
-  res.status(201).json({ success: true, message: "Applied successfully" });
+
+  res.status(201).json({
+    success: true,
+    message: "Applied successfully",
+  });
 });
+
 
 // Get all jobs applied by candidate
 export const getAppliedJobs = asyncHandler(async (req, res, next) => {

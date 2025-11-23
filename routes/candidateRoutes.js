@@ -8,7 +8,7 @@ const upload = multer();
 
 router.post("/register", registerCandidate);
 router.post("/login", loginCandidate);
-router.post("/apply/:jdId", upload.fields([{ name: "resume" }]), applyJob);
+router.post("/apply/:jdId", upload.single("resume"), applyJob);
 router.get("/applied-jobs", protect, getAppliedJobs);
 
 export default router;
