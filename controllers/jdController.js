@@ -69,6 +69,10 @@ export const createJDWithAI = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Not authorized to create JD for this offer.", 403));
   }
 
+  if (offer.isJDCreated) {
+    return next(new ErrorResponse("JD already created for this offer", 400));
+  }
+
   // Prepare additional details from HR
   const additionalDetails = {
     companyName,
@@ -112,8 +116,9 @@ export const createJDWithAI = asyncHandler(async (req, res, next) => {
     publicToken: generateUniqueToken(16),
   });
 
-  // Update offer status
+  // ✅ Update offer status AND isJDCreated
   offer.status = "JD created";
+  offer.isJDCreated = true; 
   await offer.save();
 
   res.status(201).json({
@@ -162,6 +167,17 @@ export const getAllCandidates = asyncHandler(async (req, res, next) => {
   res.status(200).json({ success: true, count: Candidate.length, data: Candidate });
 });
 
+// Get only filtered candidates for a JD
+export const getFilteredCandidatesForJD = asyncHandler(async (req, res, next) => {
+  const { jdId } = req.params;
+  const jd = await JD.findById(jdId).populate('filteredCandidates.candidate', 'name email phone resume');
+  if (!jd) return next(new ErrorResponse("JD not found", 404));
+  res.status(200).json({
+    success: true,
+    count: jd.filteredCandidates.length,
+    data: jd.filteredCandidates
+  });
+});
 
 export const getAllCandidatesAppliedToJD = asyncHandler(async (req, res, next) => {
   const { jdId } = req.params;
