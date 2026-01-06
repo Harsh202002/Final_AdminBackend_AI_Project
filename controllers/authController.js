@@ -4,7 +4,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import errorResponse from '../utils/errorResponse.js';
 import User from '../models/User.js';
 import { config } from '../config/index.js';
-import Candidate from '../models/Candidate.js';
+import Candidate from '../models/candidate.js';
 import axios from "axios";
 import Company from "../models/company.js";
 
