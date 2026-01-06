@@ -6,7 +6,7 @@ import ErrorResponse from "../utils/errorResponse.js"
 import sendEmail from "../utils/sendEmail.js";
 import { ticketCreatedTemplate } from "../utils/emailTemplates/ticketCreatedTemplate.js";
 import { ticketUpdateTemplate } from "../utils/emailTemplates/ticketUpdateTemplate.js";
-import { superAdminBaseUrl } from '../../Multi_tenant_Website_Frontend/src/utils/ApiConstants.jsx';
+import { superAdminBaseUrl } from '../utils/ApiConstants.js';
 
 export const createTicket = asyncHandler(async (req, res, next)=>{
     const {subject, description, priority} = req.body;
