@@ -1,0 +1,1 @@
+export const superAdminBaseUrl = "https://react-ai-backend.onrender.com"

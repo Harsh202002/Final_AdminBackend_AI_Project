@@ -7,7 +7,7 @@ import { config } from '../config/index.js';
 import Candidate from '../models/candidate.js';
 import axios from "axios";
 import Company from "../models/company.js";
-import { superAdminBaseUrl } from '../../Multi_tenant_Website_Frontend/src/utils/ApiConstants.jsx';
+import { superAdminBaseUrl } from '../utils/ApiConstants.js';
 
 
 // @desc   Register user
