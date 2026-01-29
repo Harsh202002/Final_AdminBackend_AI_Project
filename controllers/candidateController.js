@@ -219,7 +219,7 @@ export const sendBulkJDInvite = asyncHandler(async (req, res, next) => {
 
 export const sendInviteToShortlisted = asyncHandler(async (req, res, next) => {
   const { jdId } = req.params;
-  const { candidateIds } = req.body;
+  const { candidateIds, startDate = '', startTime = '', endDate = '', endTime = '' } = req.body;
   if (!jdId || !Array.isArray(candidateIds) || candidateIds.length === 0) {
     return next(new errorResponse('JD id and candidateIds are required', 400));
   }
