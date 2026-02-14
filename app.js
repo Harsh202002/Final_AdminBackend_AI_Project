@@ -8,7 +8,6 @@ import rateLimit from 'express-rate-limit';
 import routes from './routes/index.js';
 import errorHandler from './middlewares/errorHandler.js';
 import { config } from './config/index.js';
-
 import assessmentRoutes from './routes/assessmentRoutes.js';
 
 const app = express();
