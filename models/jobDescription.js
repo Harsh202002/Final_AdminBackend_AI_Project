@@ -122,6 +122,7 @@ const jdSchema = new mongoose.Schema(
           enum: ["not_sent", "sent", "failed", "bounced"],
           default: "not_sent",
         },
+        
         // Timestamp when invite email was sent
         mailSentAt: { type: Date, default: null },
         // Timestamp when candidate completed the test
