@@ -39,6 +39,22 @@ const jdSchema = new mongoose.Schema(
       default: "",
     },
 
+    location: {
+      type: String,
+      default: "",
+    },
+
+    dueDate: {
+      type: Date,
+      default: null,
+    },
+
+    employmentType: {
+      type: String,
+      enum: ["Full-Time", "Part-Time", "Contract", "Internship", "Freelance", "Remote", ""],
+      default: "",
+    },
+
     // New fields for AI-generated JD
     generatedByAI: {
       type: Boolean,

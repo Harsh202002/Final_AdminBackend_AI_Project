@@ -19,6 +19,7 @@ export const generateJD = async (req, res) => {
     Qualification,
     employmentType,
     salaryRange,
+    dueDate,
   } = req.body;
 
   if (!req.user || !req.user._id) {
@@ -35,6 +36,7 @@ Write a professional job description using the following:
 - Qualification: ${Qualification}
 - Employment Type: ${employmentType}
 ${salaryRange ? `- Salary Range: ${salaryRange}` : ""}
+${dueDate ? `- Application Deadline: ${new Date(dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}` : ""}
 
 Include:
 1. Company Overview
@@ -42,7 +44,10 @@ Include:
 3. Required Skills
 4. Preferred Skills
 5. Perks & Benefits
-6. How to Apply: Click here to apply → (http://103.192.198.240/CandidateRegister)
+6. Location: ${location}
+7. Employment Type: ${employmentType}
+${dueDate ? `8. Application Deadline: Mention the last date to apply` : ""}
+9. How to Apply: Click here to apply → (http://103.192.198.240/CandidateRegister)
 
 Use markdown format. Do NOT include recruiter email.
 `;
@@ -52,8 +57,11 @@ Summarize in 3–5 lines:
 - Job Title: ${title}
 - Experience: ${experience} years
 - Skills: ${skills.join(", ")}
+- Location: ${location}
+- Employment Type: ${employmentType}
+${dueDate ? `- Apply Before: ${dueDate}` : ""}
 
-Do NOT include company name, location, or salary.
+Do NOT include company name or salary.
 Only return the summary text.
 `;
 
@@ -74,10 +82,11 @@ Only return the summary text.
       company,
       experience,
       skills,
-      location,
+      location,      
       Qualification,
-      employmentType,
+      employmentType, 
       salaryRange,
+      dueDate: dueDate ? new Date(dueDate) : null, 
       fullJD,
       jobSummary,
     });

@@ -266,8 +266,21 @@ export const getRmgOffersWithJDs = asyncHandler(async (req, res, next) => {
       // Debug log for filter
       console.log('JD Filter:', jdFilter);
 
-      // Find JDs for this offer and HR
-      const jds = await JobDescription.find(jdFilter).lean();
+      const jds = await JobDescription.find(jdFilter)
+        .populate({
+          path: 'appliedCandidates.candidate',
+          select: 'name email resume'
+        })
+        .populate({
+          path: 'filteredCandidates.candidate',
+          select: 'name email resume'
+        })
+        .populate({
+          path: 'unfilteredCandidates.candidate',
+          select: 'name email resume'
+        })
+        .lean();
+
       console.log('JD Results:', jds);
 
       const jdDetails = jds.map((jd) => {
@@ -282,7 +295,7 @@ export const getRmgOffersWithJDs = asyncHandler(async (req, res, next) => {
 
         let applicantsByStatus = {};
         if (Array.isArray(jd.applicants)) {
-          jd.applicants.forEach(a => { 
+          jd.applicants.forEach(a => {
             const s = a && a.status ? a.status : 'unknown';
             applicantsByStatus[s] = (applicantsByStatus[s] || 0) + 1;
           });
@@ -424,6 +437,50 @@ export const getLatestFilteredUnfilteredCandidates = asyncHandler(async (req, re
     const results = await JobDescription.aggregate(pipeline);
 
     res.status(200).json({ success: true, count: results.length, data: results });
+  } catch (err) {
+    return next(new ErrorResponse(err.message || 'Failed to fetch candidates', 500));
+  }
+});
+
+export const getAllFilteredUnfilteredCandidates = asyncHandler(async (req, res, next) => {
+  try {
+    const pipeline = [
+      { $unwind: '$appliedCandidates' },
+      { $match: { 'appliedCandidates.status': { $in: ['filtered', 'unfiltered'] } } },
+      { $sort: { 'appliedCandidates.appliedAt': -1 } },
+
+      {
+        $lookup: {
+          from: 'offers',
+          localField: 'offerId',
+          foreignField: '_id',
+          as: 'offer'
+        }
+      },
+      { $unwind: { path: '$offer', preserveNullAndEmptyArrays: true } },
+
+      {
+        $project: {
+          _id: 0,
+          name: '$appliedCandidates.name',
+          phone: '$appliedCandidates.phone',
+          status: '$appliedCandidates.status',
+          appliedAt: '$appliedCandidates.appliedAt',
+          candidateId: '$appliedCandidates.candidate',
+          jobTitle: '$offer.jobTitle',
+          skills: '$offer.skills'
+        }
+      }
+    ];
+
+    const results = await JobDescription.aggregate(pipeline);
+
+    res.status(200).json({
+      success: true,
+      count: results.length,
+      data: results
+    });
+
   } catch (err) {
     return next(new ErrorResponse(err.message || 'Failed to fetch candidates', 500));
   }
