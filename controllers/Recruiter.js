@@ -9,6 +9,90 @@ import JD from '../models/jdhard.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// export const generateJD = async (req, res) => {
+//   const {
+//     title,
+//     company,
+//     experience,
+//     skills,
+//     location,
+//     Qualification,
+//     employmentType,
+//     salaryRange,
+//   } = req.body;
+
+//   if (!req.user || !req.user._id) {
+//     return res.status(401).json({ message: "Unauthorized" });
+//   }
+
+//   const jdPrompt = `
+// Write a professional job description using the following:
+// - Job Title: ${title}
+// - Company: ${company}
+// - Required Experience: ${experience} years
+// - Skills: ${skills.join(", ")}
+// - Location: ${location}
+// - Qualification: ${Qualification}
+// - Employment Type: ${employmentType}
+// ${salaryRange ? `- Salary Range: ${salaryRange}` : ""}
+
+// Include:
+// 1. Company Overview
+// 2. Job Summary
+// 3. Required Skills
+// 4. Preferred Skills
+// 5. Perks & Benefits
+// 6. How to Apply: Click here to apply → (http://103.192.198.240/CandidateRegister)
+
+// Use markdown format. Do NOT include recruiter email.
+// `;
+
+//   const summaryPrompt = `
+// Summarize in 3–5 lines:
+// - Job Title: ${title}
+// - Experience: ${experience} years
+// - Skills: ${skills.join(", ")}
+
+// Do NOT include company name, location, or salary.
+// Only return the summary text.
+// `;
+
+//   try {
+//     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+//     // Generate Full JD
+//     const jdResult = await model.generateContent(jdPrompt);
+//     const fullJD = jdResult.response.text();
+
+//     // Generate Summary
+//     const summaryResult = await model.generateContent(summaryPrompt);
+//     const jobSummary = summaryResult.response.text().trim();
+
+//     const newJD = await JD.create({
+//       HR: req.user._id,
+//       title,
+//       company,
+//       experience,
+//       skills,
+//       location,
+//       Qualification,
+//       employmentType,
+//       salaryRange,
+//       fullJD,
+//       jobSummary,
+//     });
+
+//     res.status(201).json({
+//       message: "Job Description generated successfully.",
+//       jd: newJD,
+//     });
+//   } catch (err) {
+//     console.error("Gemini Error:", err);
+//     res.status(500).json({ message: "Gemini JD generation failed." });
+//   }
+// };
+
+
 export const generateJD = async (req, res) => {
   const {
     title,
@@ -21,11 +105,11 @@ export const generateJD = async (req, res) => {
     salaryRange,
     dueDate,
   } = req.body;
-
+ 
   if (!req.user || !req.user._id) {
     return res.status(401).json({ message: "Unauthorized" });
   }
-
+ 
   const jdPrompt = `
 Write a professional job description using the following:
 - Job Title: ${title}
@@ -37,7 +121,7 @@ Write a professional job description using the following:
 - Employment Type: ${employmentType}
 ${salaryRange ? `- Salary Range: ${salaryRange}` : ""}
 ${dueDate ? `- Application Deadline: ${new Date(dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}` : ""}
-
+ 
 Include:
 1. Company Overview
 2. Job Summary
@@ -48,10 +132,10 @@ Include:
 7. Employment Type: ${employmentType}
 ${dueDate ? `8. Application Deadline: Mention the last date to apply` : ""}
 9. How to Apply: Click here to apply → (http://103.192.198.240/CandidateRegister)
-
+ 
 Use markdown format. Do NOT include recruiter email.
 `;
-
+ 
   const summaryPrompt = `
 Summarize in 3–5 lines:
 - Job Title: ${title}
@@ -60,22 +144,22 @@ Summarize in 3–5 lines:
 - Location: ${location}
 - Employment Type: ${employmentType}
 ${dueDate ? `- Apply Before: ${dueDate}` : ""}
-
+ 
 Do NOT include company name or salary.
 Only return the summary text.
 `;
-
+ 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
+ 
     // Generate Full JD
     const jdResult = await model.generateContent(jdPrompt);
     const fullJD = jdResult.response.text();
-
+ 
     // Generate Summary
     const summaryResult = await model.generateContent(summaryPrompt);
     const jobSummary = summaryResult.response.text().trim();
-
+ 
     const newJD = await JD.create({
       HR: req.user._id,
       title,
@@ -86,11 +170,11 @@ Only return the summary text.
       Qualification,
       employmentType, 
       salaryRange,
-      dueDate: dueDate ? new Date(dueDate) : null, 
+      dueDate: dueDate ? new Date(dueDate) : null,
       fullJD,
       jobSummary,
     });
-
+ 
     res.status(201).json({
       message: "Job Description generated successfully.",
       jd: newJD,
@@ -100,7 +184,6 @@ Only return the summary text.
     res.status(500).json({ message: "Gemini JD generation failed." });
   }
 };
-
 export const editJD = async (req, res) => {
   const { id } = req.params;
 

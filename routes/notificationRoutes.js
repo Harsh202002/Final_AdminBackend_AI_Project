@@ -10,6 +10,9 @@ router.get('/get-notify', protect, getNotifications);
 router.patch('/mark-all-read', protect, markAllAsRead);
 // Mark single notification as read
 router.patch('/:id/read', protect, markAsRead);
+
+router.patch('/mark-all-read', protect, markAllAsRead);
+ 
 // Create notification (internal use)
 router.post('/', createNotification);
 
