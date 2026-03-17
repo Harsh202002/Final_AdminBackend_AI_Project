@@ -36,11 +36,13 @@ export const markAsRead = async (req, res) => {
   }
 };
 
-
+// Mark all notifications for the logged-in user as read
 export const markAllAsRead = async (req, res) => {
   try {
+    console.log('markAllAsRead called for user:', req.user._id);
     const userId = req.user._id;
     const result = await Notification.updateMany({ recipient: userId, read: false }, { $set: { read: true } });
+    console.log('markAllAsRead result:', result);
     // Optionally notify other sockets for this user
     try {
       const io = req.app.get('io');
